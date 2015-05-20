@@ -1,0 +1,107 @@
+<?php
+include('config.php');
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Simple Login Template | PrepBootstrap</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="font-awesome/css/font-awesome.min.css" />
+
+    <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+</head>
+<body>
+<?php
+//If the user is logged, we log him out
+if(isset($_SESSION['username']))
+{
+	//We log him out by deleting the username and userid sessions
+	unset($_SESSION['username'], $_SESSION['id']);
+}
+else
+{
+	$ousername = '';
+	//We check if the form has been sent
+	if(isset($_POST['username'], $_POST['password']))
+	{
+		//We remove slashes depending on the configuration
+		if(get_magic_quotes_gpc())
+		{
+			$ousername = stripslashes($_POST['username']);
+			$username = mysql_real_escape_string(stripslashes($_POST['username']));
+			$password = stripslashes($_POST['password']);
+		}
+		else
+		{
+			$username = mysql_real_escape_string($_POST['username']);
+			$password = $_POST['password'];
+		}
+		//We get the password of the user
+		$req = mysql_query('select pass,id from edc_login where uname="'.$username.'"');
+		$dn = mysql_fetch_array($req);
+		//We compare the submited password and the real one, and we check if the user exists
+		if($dn['password']==$password and mysql_num_rows($req)>0)
+		{
+		
+			//If the password is good, we dont show the form
+			$form = false;
+			//We save the user name in the session username and the user Id in the session userid
+			$_SESSION['username'] = $_POST['username'];
+			$_SESSION['id'] = $dn['id'];
+			header('Location:index.php');
+		}
+		else
+		{
+			//Otherwise, we say the password is incorrect.
+			$form = true;
+			$message = 'The username or password is incorrect.';
+		}
+	}
+	else
+	{
+		$form = true;
+	}
+	if($form)
+	{
+		//We display a message if necessary
+	if(isset($message))
+	{
+		echo '<div class="message">'.$message.'</div>';
+	}
+	//We display the form
+?>
+
+<div class="container">
+
+<div class="page-header">
+    <h1>Simple Login <small>Bootstrap template, demonstrating a simple login form</small></h1>
+</div>
+
+<!-- Simple Login - START -->
+<form class="col-md-12" action="login.php">
+    <div class="form-group">
+        <input type="text" class="form-control input-lg" placeholder="Email" name="username">
+    </div>
+    <div class="form-group">
+        <input type="password" class="form-control input-lg" placeholder="Password" name="password">
+    </div>
+    <div class="form-group">
+        <button class="btn btn-primary btn-lg btn-block">Sign In</button>
+        <span><a href="#">Need help?</a></span>
+        <span class="pull-right"><a href="#">New Registration</a></span>
+    </div>
+</form>
+<!-- Simple Login - END -->
+
+</div>
+
+<?php
+	}
+}
+?>
+</body>
+</html>
